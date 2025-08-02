@@ -1,0 +1,22 @@
+name: Publish Docker Image
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on tags like v1.0, v2.0
+
+jobs:
+  publish:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Docker login
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build and push image
+        run: |
+          docker build -t yourdockerhubuser/flask-cont-app:${{ github.ref_name }} .
+          docker push yourdockerhubuser/flask-cont-app:${{ github.ref_name }}
