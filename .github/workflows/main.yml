@@ -18,5 +18,5 @@ jobs:
 
       - name: Build and push image
         run: |
-          docker build -t yourdockerhubuser/flask-cont-app:${{ github.ref_name }} .
-          docker push yourdockerhubuser/flask-cont-app:${{ github.ref_name }}
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/flask-cont-app:${{ github.ref_name }} .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/flask-cont-app:${{ github.ref_name }}
