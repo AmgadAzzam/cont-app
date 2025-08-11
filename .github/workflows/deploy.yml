@@ -25,8 +25,8 @@ jobs:
       # Optionally apply manifests first (creates Deployment/Service if missing)
       - name: Ensure resources exist
         run: |
-          kubectl apply -f k8s/deployment.yml
-          kubectl apply -f k8s/service.yml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
 
       - name: Update image to selected tag
         env:
