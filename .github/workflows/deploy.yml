@@ -1,25 +1,38 @@
-name: Deploy to Kubernetes
+name: Deploy to Kubernetes (manual with tag)
 
 on:
-  workflow_run:
-    workflows: ["Publish Docker Image"]  # Name of your build workflow
-    types:
-      - completed
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Docker image tag to deploy (e.g. v1.3 or latest)"
+        required: true
+        default: "latest"
 
 jobs:
   deploy:
     runs-on: self-hosted
+
     steps:
       - uses: actions/checkout@v3
 
       - name: Set up kubeconfig
         run: |
-          echo "${{ secrets.KUBECONFIG_DATA }}" > kubeconfig
-          export KUBECONFIG=$(pwd)/kubeconfig
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_DATA }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
           kubectl get nodes
 
-      - name: Deploy to Kubernetes
+      # Optionally apply manifests first (creates Deployment/Service if missing)
+      - name: Ensure resources exist
         run: |
           kubectl apply -f k8s/deployment.yml
           kubectl apply -f k8s/service.yml
+
+      - name: Update image to selected tag
+        env:
+          DH_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          TAG: ${{ github.event.inputs.image_tag }}
+        run: |
+          kubectl set image deployment/flask-cont-app \
+            flask-cont-app=${DH_USER}/flask-cont-app:${TAG}
           kubectl rollout status deployment/flask-cont-app --timeout=120s
